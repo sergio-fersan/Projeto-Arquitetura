@@ -4,6 +4,8 @@ MOV P1, #0FFH     ; Inicializa display (desligado)
 MOV P2, #00H      ; LEDs apagados
 MOV R0, #0        ; Contador de moedas (inicia em 0)
 
+LJMP MAIN
+ORG 0100H
 
 ; Tabela de conversão para display de 7 segmentos (ânodo comum)
 DISPLAY_TABLE:
