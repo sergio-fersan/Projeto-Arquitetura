@@ -1,0 +1,72 @@
+; Programa para teclado matricial no EdSim51
+; Tecla 4 (P0.2 linha, P0.6 coluna) - acende LED P1.0
+; Tecla 8 (P0.1 linha, P0.6 coluna) - apaga LED P1.0
+
+ORG 0000H
+    LJMP MAIN
+
+ORG 0030H
+MAIN:
+    MOV P1, #00000000B  ; Inicializa portas
+    MOV P0, #11111111B  ; Configura P0 como entrada com pull-ups
+
+LOOP:
+    ; Verificar a linha da tecla 4 (P0.2)
+    CLR P0.2            ; Ativa linha da tecla 4
+    JB P0.6, CHECK_KEY8 ; Se tecla 4 não pressionada, verifica tecla 8
+    
+    ; Tecla 4 pressionada
+    CALL DELAY_DEBOUNCE
+    CALL KEY_4_ACTION
+    SJMP WAIT_RELEASE_4
+
+CHECK_KEY8:
+    SETB P0.2           ; Desativa linha da tecla 4
+    CLR P0.1            ; Ativa linha da tecla 8
+    JB P0.5, NEXT_KEY   ; Se tecla 8 não pressionada, continua
+    
+    ; Tecla 8 pressionada
+    CALL DELAY_DEBOUNCE
+    CALL KEY_8_ACTION
+    SJMP WAIT_RELEASE_8
+
+NEXT_KEY:
+    SETB P0.1           ; Desativa linha da tecla 8
+    SJMP LOOP           ; Volta ao início do loop
+
+; Rotina de espera para liberação da tecla 4
+WAIT_RELEASE_4:
+    JB P0.6, RELEASED_4
+    SJMP WAIT_RELEASE_4
+RELEASED_4:
+    SETB P0.2           ; Desativa linha da tecla 4
+    SJMP LOOP
+
+; Rotina de espera para liberação da tecla 8
+WAIT_RELEASE_8:
+    JB P0.6, RELEASED_8
+    SJMP WAIT_RELEASE_8
+RELEASED_8:
+    SETB P0.1           ; Desativa linha da tecla 8
+    SJMP LOOP
+
+; Ação para tecla 4 (acende LED)
+KEY_4_ACTION:
+    SETB P1.0           ; Acende LED no P1.0
+    RET
+
+; Ação para tecla 8 (apaga LED)
+KEY_8_ACTION:
+    CLR P1.0            ; Apaga LED no P1.0
+    RET
+
+; Sub-rotina de delay para debounce
+DELAY_DEBOUNCE:
+    MOV R0, #50
+DELAY_LOOP:
+    MOV R1, #255
+    DJNZ R1, $
+    DJNZ R0, DELAY_LOOP
+    RET
+
+END
