@@ -1,9 +1,11 @@
 # Projeto-Arquitetura
 
-O objetivo do projeto é simular, de maneira simples, uma máquina de café, onde os botões do teclado matricial podem ser usados para selecionar qual tipo de café o usuário deseja, e "inserir" moedas de valores diferentes, para pagar o custo do café.
+O objetivo do projeto é simular, de maneira simples, uma fechadura eletrônica, onde uma senha deve ser inserida na ordem correta para destrancar a fechadura.
 
-Os botões 1, 2 e 3 selecionam o tipo de café, enquanto 4, 5 e 6 simulam a inserção de moedas (25 centavos, 50 centavos e 1 real). O display LCD mostra o nome do café entre outras informações, como "valor insuficiente", "preparando", etc. enquanto o display de 7 segmentos mostra o valor do café selecionado (02.50, 03.75, etc.).
+O projeto contará com um alarme que, caso muitas tentativas incorretas sejam feitas, será disparado.
 
-Para fazer o projeto será utilizado o painel de instrumentos do EdSim51
+O teclado matricial é usado para digitar a senha, com * usado para trancar a porta caso esteja destrancada.
+
+Para fazer o projeto será utilizado o painel de instrumentos do EdSim51 (em sua maior parte o teclado matricial e a tela LCD).
 
 Sergio de Siqueira Santos - 22.124.082-3
