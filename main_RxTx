@@ -1,0 +1,69 @@
+; VERIFICADOR DE SENHA 2 DÍGITOS - 4800 BAUD
+; Senha correta: "12"
+; Como usar:
+; 1. Configure o terminal serial para 4800 baud, 8N1
+; 2. Digite 2 caracteres (ex: "12")
+; 3. Clique em Send Tx UMA VEZ
+; 4. LED P1.0 acende se correto, P1.1 se incorreto
+
+ORG 0000H
+    LJMP CONFIG
+
+ORG 0030H
+CONFIG:
+    ; Configuração serial para 4800 baud
+    MOV TMOD, #20H    ; Timer 1 no modo 2
+    MOV TH1, #0FAH    ; Valor para 4800 baud (FAH)
+    MOV SCON, #50H    ; Modo 1, recepção habilitada
+    SETB TR1          ; Inicia timer
+    
+    ; Inicializa LEDs
+    CLR P1.0          ; LED senha correta
+    CLR P1.1          ; LED senha incorreta
+
+LEITURA:
+    ; Limpa buffer
+    MOV 40H, #0
+    MOV 41H, #0
+    
+    ; Primeiro caractere
+    JNB RI, $
+    MOV A, SBUF
+    CLR RI
+    MOV 40H, A
+    
+    ; Segundo caractere
+    JNB RI, $
+    MOV A, SBUF
+    CLR RI
+    MOV 41H, A
+
+VERIFICA:
+    ; Compara com senha "12"
+    MOV A, 40H
+    CJNE A, #'1', ERRO
+    
+    MOV A, 41H
+    CJNE A, #'2', ERRO
+
+CERTO:
+    SETB P1.0
+    CLR P1.1
+    SJMP DELAY
+
+ERRO:
+    CLR P1.0
+    SETB P1.1
+
+DELAY:
+    ; Delay de 500ms aproximadamente
+    MOV R5, #100
+DELAY_LOOP:
+    MOV R6, #200
+    DJNZ R6, $
+    DJNZ R5, DELAY_LOOP
+    
+    ; Reinicia
+    SJMP LEITURA
+
+END
