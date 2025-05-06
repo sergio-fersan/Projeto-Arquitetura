@@ -63,79 +63,79 @@ RESET_PASSWORD:
 NOT_STAR:
     ; Verifica se é um dígito válido (0-9)
     CJNE A, #00H, CHECK_1
-    MOV R2, #00H      ; Tecla 0 (armazena temporariamente em R2)
-    SJMP VALID_DIGIT
+    MOV A, #00H       ; Tecla 0
+    SJMP STORE_DIGIT
 CHECK_1:
     CJNE A, #01H, CHECK_2
-    MOV R2, #01H      ; Tecla 1
-    SJMP VALID_DIGIT
+    MOV A, #01H       ; Tecla 1
+    SJMP STORE_DIGIT
 CHECK_2:
     CJNE A, #02H, CHECK_3
-    MOV R2, #02H      ; Tecla 2
-    SJMP VALID_DIGIT
+    MOV A, #02H       ; Tecla 2
+    SJMP STORE_DIGIT
 CHECK_3:
     CJNE A, #03H, CHECK_4
-    MOV R2, #03H      ; Tecla 3
-    SJMP VALID_DIGIT
+    MOV A, #03H       ; Tecla 3
+    SJMP STORE_DIGIT
 CHECK_4:
     CJNE A, #04H, CHECK_5
-    MOV R2, #04H      ; Tecla 4
-    SJMP VALID_DIGIT
+    MOV A, #04H       ; Tecla 4
+    SJMP STORE_DIGIT
 CHECK_5:
     CJNE A, #05H, CHECK_6
-    MOV R2, #05H      ; Tecla 5
-    SJMP VALID_DIGIT
+    MOV A, #05H       ; Tecla 5
+    SJMP STORE_DIGIT
 CHECK_6:
     CJNE A, #06H, CHECK_7
-    MOV R2, #06H      ; Tecla 6
-    SJMP VALID_DIGIT
+    MOV A, #06H       ; Tecla 6
+    SJMP STORE_DIGIT
 CHECK_7:
     CJNE A, #07H, CHECK_8
-    MOV R2, #07H      ; Tecla 7
-    SJMP VALID_DIGIT
+    MOV A, #07H       ; Tecla 7
+    SJMP STORE_DIGIT
 CHECK_8:
     CJNE A, #08H, CHECK_9
-    MOV R2, #08H      ; Tecla 8
-    SJMP VALID_DIGIT
+    MOV A, #08H       ; Tecla 8
+    SJMP STORE_DIGIT
 CHECK_9:
     CJNE A, #09H, INVALID_KEY
-    MOV R2, #09H      ; Tecla 9
-    SJMP VALID_DIGIT
+    MOV A, #09H       ; Tecla 9
+    SJMP STORE_DIGIT
 
 INVALID_KEY:
     LJMP MAIN_LOOP    ; Volta para o loop principal
 
-VALID_DIGIT:
+STORE_DIGIT:
     ; Verifica se já digitou 4 dígitos
-    MOV A, 20H
-    CJNE A, #04H, STORE_CONTINUE
+    MOV R1, 20H       ; Carrega contador de dígitos
+    CJNE R1, #04H, STORE_CONTINUE
     LJMP MAIN_LOOP    ; Já tem 4 dígitos, ignora até *
 
 STORE_CONTINUE:
-    ; Armazena o dígito pressionado (está em R2)
+    ; Armazena o dígito pressionado (já está em A)
     INC 20H           ; Incrementa contador de dígitos
-    MOV A, 20H        ; Usa A como índice
+    MOV R1, 20H       ; Usa R1 como índice temporário
     
     ; Determina onde armazenar o dígito
-    CJNE A, #01H, NOT_FIRST
-    MOV 21H, R2       ; Armazena primeiro dígito
+    CJNE R1, #01H, NOT_FIRST
+    MOV 21H, A        ; Armazena primeiro dígito
     LJMP MAIN_LOOP
 
 NOT_FIRST:
-    CJNE A, #02H, NOT_SECOND
-    MOV 22H, R2       ; Armazena segundo dígito
+    CJNE R1, #02H, NOT_SECOND
+    MOV 22H, A        ; Armazena segundo dígito
     LJMP MAIN_LOOP
 
 NOT_SECOND:
-    CJNE A, #03H, NOT_THIRD
-    MOV 23H, R2       ; Armazena terceiro dígito
+    CJNE R1, #03H, NOT_THIRD
+    MOV 23H, A        ; Armazena terceiro dígito
     LJMP MAIN_LOOP
 
 NOT_THIRD:
-    MOV 24H, R2       ; Armazena quarto dígito
+    MOV 24H, A        ; Armazena quarto dígito
     LJMP MAIN_LOOP
 
-; Rotina de atraso
+; Rotina de atraso (ajuste conforme necessário)
 DELAY:
     MOV R7, #0FFH
 DELAY_LOOP1:
@@ -145,47 +145,44 @@ DELAY_LOOP2:
     DJNZ R7, DELAY_LOOP1
     RET
 
-; Rotina do teclado
-VOLTA:
-CALL TECLADO
-SJMP VOLTA
-
+; Rotina do teclado (a mesma que você forneceu)
 TECLADO:
-MOV R0, #0CH ; clear R0 - the first key is key0
+    MOV R0, #0CH      ; clear R0 - the first key is key0
 
-; scan row0
-SETB P0.3 ; set row3
-CLR P0.0 ; clear row0
-CALL colScan ; call column-scan subroutine
+    ; scan row0
+    SETB P0.3         ; set row3
+    CLR P0.0          ; clear row0
+    CALL colScan      ; call column-scan subroutine
 
-; scan row1
-SETB P0.0 ; set row0
-CLR P0.1 ; clear row1
-CALL colScan ; call column-scan subroutine
+    ; scan row1
+    SETB P0.0         ; set row0
+    CLR P0.1          ; clear row1
+    CALL colScan      ; call column-scan subroutine
 
-; scan row2
-SETB P0.1 ; set row1
-CLR P0.2 ; clear row2
-CALL colScan ; call column-scan subroutine
+    ; scan row2
+    SETB P0.1         ; set row1
+    CLR P0.2          ; clear row2
+    CALL colScan      ; call column-scan subroutine
 
-; scan row3
-SETB P0.2 ; set row2
-CLR P0.3 ; clear row3
-CALL colScan ; call column-scan subroutine
-CJNE R0,#0CH,SAI
-MOV A,#0FFH
+    ; scan row3
+    SETB P0.2         ; set row2
+    CLR P0.3          ; clear row3
+    CALL colScan      ; call column-scan subroutine
+    CJNE R0,#0CH,SAI
+    MOV A,#0FFH
 SAI:
-RET
+    RET
 
 colScan:
-JNB P0.4, gotKey ; if col0 is cleared - key found
-DEC R0 ; otherwise move to next key
-JNB P0.5, gotKey ; if col1 is cleared - key found
-DEC R0 ; otherwise move to next key
-JNB P0.6, gotKey ; if col2 is cleared - key found
-DEC R0 ; otherwise move to next key
-RET ; return from subroutine - key not found
+    JNB P0.4, gotKey  ; if col0 is cleared - key found
+    DEC R0            ; otherwise move to next key
+    JNB P0.5, gotKey  ; if col1 is cleared - key found
+    DEC R0            ; otherwise move to next key
+    JNB P0.6, gotKey  ; if col2 is cleared - key found
+    DEC R0            ; otherwise move to next key
+    RET               ; return from subroutine - key not found
 gotKey:
-MOV A,R0
-RET 
+    MOV A,R0
+    RET
+
 END
