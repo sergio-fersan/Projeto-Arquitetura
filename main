@@ -18,6 +18,7 @@ INICIO:
 	MOV A, #0FFH
 
 MAIN_LOOP:
+	MOV A, #0FFH
     CALL TECLADO      ; Chama a rotina do teclado
     CJNE A, #0FFH, PROCESS_KEY ; Se uma tecla foi pressionada (A != 0xFF)
     SJMP MAIN_LOOP    ; Se não, continua no loop
