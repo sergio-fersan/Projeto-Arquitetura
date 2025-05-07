@@ -15,7 +15,6 @@ INICIO:
     MOV 26H, #02H     ; Senha dígito 2 (endereço 26H)
     MOV 27H, #03H     ; Senha dígito 3 (endereço 27H)
     MOV 28H, #04H     ; Senha dígito 4 (endereço 28H)
-	MOV A, #0FFH
 
 MAIN_LOOP:
 	MOV A, #0FFH
@@ -63,50 +62,10 @@ RESET_PASSWORD:
 
 NOT_STAR:
     ; Verifica se é um dígito válido (0-9)
-    CJNE A, #00H, CHECK_1
-    MOV A, #00H       ; Tecla 0
-    SJMP STORE_DIGIT
-CHECK_1:
-    CJNE A, #01H, CHECK_2
-    MOV A, #01H       ; Tecla 1
-    SJMP STORE_DIGIT
-CHECK_2:
-    CJNE A, #02H, CHECK_3
-    MOV A, #02H       ; Tecla 2
-    SJMP STORE_DIGIT
-CHECK_3:
-    CJNE A, #03H, CHECK_4
-    MOV A, #03H       ; Tecla 3
-    SJMP STORE_DIGIT
-CHECK_4:
-    CJNE A, #04H, CHECK_5
-    MOV A, #04H       ; Tecla 4
-    SJMP STORE_DIGIT
-CHECK_5:
-    CJNE A, #05H, CHECK_6
-    MOV A, #05H       ; Tecla 5
-    SJMP STORE_DIGIT
-CHECK_6:
-    CJNE A, #06H, CHECK_7
-    MOV A, #06H       ; Tecla 6
-    SJMP STORE_DIGIT
-CHECK_7:
-    CJNE A, #07H, CHECK_8
-    MOV A, #07H       ; Tecla 7
-    SJMP STORE_DIGIT
-CHECK_8:
-    CJNE A, #08H, CHECK_9
-    MOV A, #08H       ; Tecla 8
-    SJMP STORE_DIGIT
-CHECK_9:
-    CJNE A, #09H, INVALID_KEY
-    MOV A, #09H       ; Tecla 9
-    SJMP STORE_DIGIT
-
-INVALID_KEY:
-    LJMP MAIN_LOOP    ; Volta para o loop principal
-
-STORE_DIGIT:
+    ; O valor já está em A (0-9 para teclas 0-9, 0Ah para *)
+    ; Se chegou aqui, A contém o código da tecla (0-9)
+    ; Não precisamos fazer todas as verificações, pois o teclado já retorna os valores corretos
+    
     ; Verifica se já digitou 4 dígitos
     MOV R1, 20H       ; Carrega contador de dígitos
     CJNE R1, #04H, STORE_CONTINUE
@@ -138,9 +97,9 @@ NOT_THIRD:
 
 ; Rotina de atraso (ajuste conforme necessário)
 DELAY:
-    MOV R7, #05H
+    MOV R7, #0FFH
 DELAY_LOOP1:
-    MOV R6, #055H
+    MOV R6, #0FFH
 DELAY_LOOP2:
     DJNZ R6, DELAY_LOOP2
     DJNZ R7, DELAY_LOOP1
