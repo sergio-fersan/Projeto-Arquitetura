@@ -17,7 +17,7 @@ INICIO:
     MOV 28H, #04H     ; Senha dígito 4 (endereço 28H)
 
 MAIN_LOOP:
-	MOV A, #0FFH
+    MOV A, #0FFH
     CALL TECLADO      ; Chama a rotina do teclado
     CJNE A, #0FFH, PROCESS_KEY ; Se uma tecla foi pressionada (A != 0xFF)
     SJMP MAIN_LOOP    ; Se não, continua no loop
@@ -51,25 +51,23 @@ WRONG_PASSWORD:
     CLR P1.1          ; Apaga LED verde
     CALL DELAY        ; Espera um tempo
     CLR P1.0          ; Apaga LED vermelho
-    
-RESET_PASSWORD:
-    MOV 20H, #00H     ; Reseta contador de dígitos
-    MOV 21H, #00H     ; Limpa dígitos armazenados
-    MOV 22H, #00H
-    MOV 23H, #00H
-    MOV 24H, #00H
-    SJMP MAIN_LOOP    ; Volta para o loop principal
+    SJMP RESET_PASSWORD ; Reinicia para nova tentativa
 
 NOT_STAR:
+    ; Verifica se é a tecla # (resetar senha)
+    CJNE A, #0CH, NOT_HASH ; Se não for #, verifica dígitos
+    ; Tecla # pressionada - resetar senha
+    SJMP RESET_PASSWORD
+
+NOT_HASH:
     ; Verifica se é um dígito válido (0-9)
-    ; O valor já está em A (0-9 para teclas 0-9, 0Ah para *)
+    ; O valor já está em A (0-9 para teclas 0-9, 0Ah para *, 0Ch para #)
     ; Se chegou aqui, A contém o código da tecla (0-9)
-    ; Não precisamos fazer todas as verificações, pois o teclado já retorna os valores corretos
     
     ; Verifica se já digitou 4 dígitos
     MOV R1, 20H       ; Carrega contador de dígitos
     CJNE R1, #04H, STORE_CONTINUE
-    LJMP MAIN_LOOP    ; Já tem 4 dígitos, ignora até *
+    LJMP MAIN_LOOP    ; Já tem 4 dígitos, ignora até * ou #
 
 STORE_CONTINUE:
     ; Armazena o dígito pressionado (já está em A)
@@ -94,6 +92,14 @@ NOT_SECOND:
 NOT_THIRD:
     MOV 24H, A        ; Armazena quarto dígito
     LJMP MAIN_LOOP
+
+RESET_PASSWORD:
+    MOV 20H, #00H     ; Reseta contador de dígitos
+    MOV 21H, #00H     ; Limpa dígitos armazenados
+    MOV 22H, #00H
+    MOV 23H, #00H
+    MOV 24H, #00H
+    LJMP MAIN_LOOP    ; Volta para o loop principal
 
 ; Rotina de atraso (ajuste conforme necessário)
 DELAY:
