@@ -97,9 +97,9 @@ NOT_THIRD:
 
 ; Rotina de atraso (ajuste conforme necessário)
 DELAY:
-    MOV R7, #0FFH
+    MOV R7, #05H
 DELAY_LOOP1:
-    MOV R6, #0FFH
+    MOV R6, #055H
 DELAY_LOOP2:
     DJNZ R6, DELAY_LOOP2
     DJNZ R7, DELAY_LOOP1
