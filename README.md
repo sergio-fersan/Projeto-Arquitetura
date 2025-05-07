@@ -2,8 +2,7 @@
 
 O objetivo do projeto é simular, de maneira simples, uma fechadura eletrônica, onde uma senha deve ser inserida na ordem correta para destrancar a fechadura.
 
-O projeto contará com um alarme que, caso muitas tentativas incorretas sejam feitas, será disparado.
-
-Por enquanto, o projeto utiliza o external UART do EdSim51DI para receber a senha.
+A inserção da senha é feita com o teclado 4x3 do EdSim51. O LED vermelho indica se a senha inserida está errada, e o verde se está correta.
+O botão * confirma a senha digitada, enquanto o botão # reseta.
 
 Sergio de Siqueira Santos - 22.124.082-3
