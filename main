@@ -1,154 +1,149 @@
-ORG 0000H
-LJMP INICIO
+	ORG 0000H
+	LJMP INICIO
 
-ORG 0100H
+	ORG 0100H
 INICIO:
-    MOV P1, #00H      ; Inicializa os LEDs (P1.0 e P1.1) apagados
-    MOV 20H, #00H     ; Contador de dígitos digitados (endereço 20H)
-    MOV 21H, #00H     ; Dígito 1 da senha armazenado (endereço 21H)
-    MOV 22H, #00H     ; Dígito 2 da senha armazenado (endereço 22H)
-    MOV 23H, #00H     ; Dígito 3 da senha armazenado (endereço 23H)
-    MOV 24H, #00H     ; Dígito 4 da senha armazenado (endereço 24H)
-    
-    ; Definir a senha (exemplo: 1-2-3-4)
-    MOV 25H, #01H     ; Senha dígito 1 (endereço 25H)
-    MOV 26H, #02H     ; Senha dígito 2 (endereço 26H)
-    MOV 27H, #03H     ; Senha dígito 3 (endereço 27H)
-    MOV 28H, #04H     ; Senha dígito 4 (endereço 28H)
+	MOV P1, #00H  ; Inicializa os LEDs apagados
+	MOV 20H, #00H ; Contador de dígitos
+	MOV 21H, #00H ; Dígito 1
+	MOV 22H, #00H ; Dígito 2
+	MOV 23H, #00H ; Dígito 3
+	MOV 24H, #00H ; Dígito 4
+
+	MOV 25H, #01H ; Senha dígito 1
+	MOV 26H, #02H ; Senha dígito 2
+	MOV 27H, #03H ; Senha dígito 3
+	MOV 28H, #04H ; Senha dígito 4
 
 MAIN_LOOP:
-    MOV A, #0FFH
-    CALL TECLADO      ; Chama a rotina do teclado
-    CJNE A, #0FFH, PROCESS_KEY ; Se uma tecla foi pressionada (A != 0xFF)
-    SJMP MAIN_LOOP    ; Se não, continua no loop
+	MOV A, #0FFH
+	CALL TECLADO ; Chama a rotina do teclado
+	CJNE A, #0FFH, PROCESSA_TECLA ; Se uma tecla foi pressionada (A != 0xFF)
+	SJMP MAIN_LOOP ; Se não, continua no loop
 
-PROCESS_KEY:
-    ; Verifica se é a tecla * (confirmar senha) - assumindo que * é a tecla 10
-    CJNE A, #0AH, NOT_STAR ; Se não for *, verifica dígitos
-    ; Tecla * pressionada - verificar senha
-    MOV A, 20H        ; Carrega contador de dígitos
-    CJNE A, #04H, WRONG_PASSWORD ; Se não digitou 4 dígitos, senha errada
-    
-    ; Compara cada dígito da senha
-    MOV A, 21H        ; Primeiro dígito digitado
-    CJNE A, 25H, WRONG_PASSWORD ; Compara com primeiro dígito da senha
-    MOV A, 22H        ; Segundo dígito digitado
-    CJNE A, 26H, WRONG_PASSWORD
-    MOV A, 23H        ; Terceiro dígito digitado
-    CJNE A, 27H, WRONG_PASSWORD
-    MOV A, 24H        ; Quarto dígito digitado
-    CJNE A, 28H, WRONG_PASSWORD
-    
-    ; Senha correta
-    SETB P1.1         ; Acende LED verde (senha correta)
-    CLR P1.0          ; Apaga LED vermelho
-    CALL DELAY        ; Espera um tempo
-    CLR P1.1          ; Apaga LED verde
-    SJMP RESET_PASSWORD ; Reinicia para nova tentativa
+PROCESSA_TECLA:
+; Verifica se é a tecla * (confirmar senha) - assumindo que * é a tecla 10
+	CJNE A, #0AH, NN_EH_AST ; Se não for *, verifica dígitos
+; Tecla * pressionada - verificar senha
+	MOV A, 20H ; Carrega contador de dígitos
+	CJNE A, #04H, SENHA_ERRADA ; Se não digitou 4 dígitos, senha errada
 
-WRONG_PASSWORD:
-    SETB P1.0         ; Acende LED vermelho (senha incorreta)
-    CLR P1.1          ; Apaga LED verde
-    CALL DELAY        ; Espera um tempo
-    CLR P1.0          ; Apaga LED vermelho
-    SJMP RESET_PASSWORD ; Reinicia para nova tentativa
+; Compara cada dígito da senha
+	MOV A, 21H ; Primeiro dígito digitado
+	CJNE A, 25H, SENHA_ERRADA ; Compara com primeiro dígito da senha
+	MOV A, 22H ; Segundo dígito digitado
+	CJNE A, 26H, SENHA_ERRADA
+	MOV A, 23H ; Terceiro dígito digitado
+	CJNE A, 27H, SENHA_ERRADA
+	MOV A, 24H ; Quarto dígito digitado
+	CJNE A, 28H, SENHA_ERRADA
 
-NOT_STAR:
-    ; Verifica se é a tecla # (resetar senha)
-    CJNE A, #0CH, NOT_HASH ; Se não for #, verifica dígitos
-    ; Tecla # pressionada - resetar senha
-    SJMP RESET_PASSWORD
+; Senha correta
+	SETB P1.1 ; Acende LED verde
+	CLR P1.0 ; Apaga LED vermelho
+	CALL DELAY ; Espera um tempo
+	CLR P1.1 ; Apaga LED verde
+	SJMP RESETAR ; Reinicia para nova tentativa
 
-NOT_HASH:
-    ; Verifica se é um dígito válido (0-9)
-    ; O valor já está em A (0-9 para teclas 0-9, 0Ah para *, 0Ch para #)
-    ; Se chegou aqui, A contém o código da tecla (0-9)
-    
-    ; Verifica se já digitou 4 dígitos
-    MOV R1, 20H       ; Carrega contador de dígitos
-    CJNE R1, #04H, STORE_CONTINUE
-    LJMP MAIN_LOOP    ; Já tem 4 dígitos, ignora até * ou #
+SENHA_ERRADA:
+	SETB P1.0 ; Acende LED vermelho
+	CLR P1.1 ; Apaga LED verde
+	CALL DELAY ; Espera um tempo
+	CLR P1.0 ; Apaga LED vermelho
+	SJMP RESETAR ; Reinicia para nova tentativa
 
-STORE_CONTINUE:
-    ; Armazena o dígito pressionado (já está em A)
-    INC 20H           ; Incrementa contador de dígitos
-    MOV R1, 20H       ; Usa R1 como índice temporário
-    
-    ; Determina onde armazenar o dígito
-    CJNE R1, #01H, NOT_FIRST
-    MOV 21H, A        ; Armazena primeiro dígito
-    LJMP MAIN_LOOP
+NN_EH_AST:
+; Verifica se é a tecla # (resetar senha)
+	CJNE A, #0CH, NN_EH_HASH ; Se não for #, verifica dígitos
+; Tecla # pressionada - resetar senha
+	SJMP RESETAR
 
-NOT_FIRST:
-    CJNE R1, #02H, NOT_SECOND
-    MOV 22H, A        ; Armazena segundo dígito
-    LJMP MAIN_LOOP
+NN_EH_HASH:
+; Verifica se é um dígito válido (0-9)
 
-NOT_SECOND:
-    CJNE R1, #03H, NOT_THIRD
-    MOV 23H, A        ; Armazena terceiro dígito
-    LJMP MAIN_LOOP
+; Verifica se já digitou 4 dígitos
+	MOV R1, 20H ; Carrega contador de dígitos
+	CJNE R1, #04H, CONT_ARMAZ
+	LJMP MAIN_LOOP ; Já tem 4 dígitos, ignora até * ou #
 
-NOT_THIRD:
-    MOV 24H, A        ; Armazena quarto dígito
-    LJMP MAIN_LOOP
+CONT_ARMAZ:
+; Armazena o dígito pressionado (já está em A)
+	INC 20H ; Incrementa contador de dígitos
+	MOV R1, 20H ; Usa R1 como índice temporário
 
-RESET_PASSWORD:
-    MOV 20H, #00H     ; Reseta contador de dígitos
-    MOV 21H, #00H     ; Limpa dígitos armazenados
-    MOV 22H, #00H
-    MOV 23H, #00H
-    MOV 24H, #00H
-    LJMP MAIN_LOOP    ; Volta para o loop principal
+; Determina onde armazenar o dígito
+	CJNE R1, #01H, NN_EH_PRIM
+	MOV 21H, A ; Armazena primeiro dígito
+	LJMP MAIN_LOOP
 
-; Rotina de atraso (ajuste conforme necessário)
+NN_EH_PRIM:
+	CJNE R1, #02H, NN_EH_SEG
+	MOV 22H, A ; Armazena segundo dígito
+	LJMP MAIN_LOOP
+
+NN_EH_SEG:
+	CJNE R1, #03H, NN_EH_TERC
+	MOV 23H, A ; Armazena terceiro dígito
+	LJMP MAIN_LOOP
+
+NN_EH_TERC:
+	MOV 24H, A ; Armazena quarto dígito
+	LJMP MAIN_LOOP
+
+RESETAR:
+	MOV 20H, #00H ; Reseta contador de dígitos
+	MOV 21H, #00H ; Limpa dígitos armazenados
+	MOV 22H, #00H
+	MOV 23H, #00H
+	MOV 24H, #00H
+	LJMP MAIN_LOOP ; Volta para o loop principal
+
 DELAY:
-    MOV R7, #05H
+	MOV R7, #05H
 DELAY_LOOP1:
-    MOV R6, #055H
+	MOV R6, #055H
 DELAY_LOOP2:
-    DJNZ R6, DELAY_LOOP2
-    DJNZ R7, DELAY_LOOP1
-    RET
+	DJNZ R6, DELAY_LOOP2
+	DJNZ R7, DELAY_LOOP1
+	RET
 
-; Rotina do teclado (a mesma que você forneceu)
 TECLADO:
-    MOV R0, #0CH      ; clear R0 - the first key is key0
+	MOV R0, #0CH ; clear R0 - the first key is key0
 
-    ; scan row0
-    SETB P0.3         ; set row3
-    CLR P0.0          ; clear row0
-    CALL colScan      ; call column-scan subroutine
+; scan row0
+	SETB P0.3 ; set row3
+	CLR P0.0 ; clear row0
+	CALL colScan ; call column-scan subroutine
 
-    ; scan row1
-    SETB P0.0         ; set row0
-    CLR P0.1          ; clear row1
-    CALL colScan      ; call column-scan subroutine
+; scan row1
+	SETB P0.0 ; set row0
+	CLR P0.1 ; clear row1
+	CALL colScan ; call column-scan subroutine
 
-    ; scan row2
-    SETB P0.1         ; set row1
-    CLR P0.2          ; clear row2
-    CALL colScan      ; call column-scan subroutine
+; scan row2
+	SETB P0.1 ; set row1
+	CLR P0.2 ; clear row2
+	CALL colScan ; call column-scan subroutine
 
-    ; scan row3
-    SETB P0.2         ; set row2
-    CLR P0.3          ; clear row3
-    CALL colScan      ; call column-scan subroutine
-    CJNE R0,#0CH,SAI
-    MOV A,#0FFH
+; scan row3
+	SETB P0.2 ; set row2
+	CLR P0.3 ; clear row3
+	CALL colScan ; call column-scan subroutine
+	CJNE R0,#0CH,SAI
+	MOV A,#0FFH
 SAI:
-    RET
+	RET
 
 colScan:
-    JNB P0.4, gotKey  ; if col0 is cleared - key found
-    DEC R0            ; otherwise move to next key
-    JNB P0.5, gotKey  ; if col1 is cleared - key found
-    DEC R0            ; otherwise move to next key
-    JNB P0.6, gotKey  ; if col2 is cleared - key found
-    DEC R0            ; otherwise move to next key
-    RET               ; return from subroutine - key not found
+	JNB P0.4, gotKey ; if col0 is cleared - key found
+	DEC R0 ; otherwise move to next key
+	JNB P0.5, gotKey ; if col1 is cleared - key found
+	DEC R0 ; otherwise move to next key
+	JNB P0.6, gotKey ; if col2 is cleared - key found
+	DEC R0 ; otherwise move to next key
+	RET ; return from subroutine - key not found
 gotKey:
-    MOV A,R0
-    RET
+	MOV A,R0
+	RET
 
 END
