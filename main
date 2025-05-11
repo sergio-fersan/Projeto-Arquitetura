@@ -1,149 +1,176 @@
-	ORG 0000H
-	LJMP INICIO
+ORG 0000H
+    LJMP INICIO
 
-	ORG 0100H
+    ORG 0100H
 INICIO:
-	MOV P1, #00H  ; Inicializa os LEDs apagados
-	MOV 20H, #00H ; Contador de dígitos
-	MOV 21H, #00H ; Dígito 1
-	MOV 22H, #00H ; Dígito 2
-	MOV 23H, #00H ; Dígito 3
-	MOV 24H, #00H ; Dígito 4
+    MOV P1, #00H  ; Inicializa os LEDs apagados
+    MOV P1, #0FFH ; Inicializa o display apagado
+    MOV 20H, #00H ; Contador de dígitos
+    MOV 21H, #00H ; Dígito 1
+    MOV 22H, #00H ; Dígito 2
+    MOV 23H, #00H ; Dígito 3
+    MOV 24H, #00H ; Dígito 4
 
-	MOV 25H, #01H ; Senha dígito 1
-	MOV 26H, #02H ; Senha dígito 2
-	MOV 27H, #03H ; Senha dígito 3
-	MOV 28H, #04H ; Senha dígito 4
+    MOV 25H, #01H ; Senha dígito 1
+    MOV 26H, #02H ; Senha dígito 2
+    MOV 27H, #03H ; Senha dígito 3
+    MOV 28H, #04H ; Senha dígito 4
 
 MAIN_LOOP:
-	MOV A, #0FFH
-	CALL TECLADO ; Chama a rotina do teclado
-	CJNE A, #0FFH, PROCESSA_TECLA ; Se uma tecla foi pressionada (A != 0xFF)
-	SJMP MAIN_LOOP ; Se não, continua no loop
+    MOV A, #0FFH
+    CALL TECLADO ; Chama a rotina do teclado
+    CJNE A, #0FFH, PROCESSA_TECLA ; Se uma tecla foi pressionada (A != 0xFF)
+    SJMP MAIN_LOOP ; Se não, continua no loop
 
 PROCESSA_TECLA:
-; Verifica se é a tecla * (confirmar senha) - assumindo que * é a tecla 10
-	CJNE A, #0AH, NN_EH_AST ; Se não for *, verifica dígitos
-; Tecla * pressionada - verificar senha
-	MOV A, 20H ; Carrega contador de dígitos
-	CJNE A, #04H, SENHA_ERRADA ; Se não digitou 4 dígitos, senha errada
+    ; Verifica se é a tecla * (confirmar senha) - assumindo que * é a tecla 10
+    CJNE A, #0AH, NN_EH_AST ; Se não for *, verifica dígitos
+    ; Tecla * pressionada - verificar senha
+    MOV A, 20H ; Carrega contador de dígitos
+    CJNE A, #04H, SENHA_ERRADA ; Se não digitou 4 dígitos, senha errada
 
-; Compara cada dígito da senha
-	MOV A, 21H ; Primeiro dígito digitado
-	CJNE A, 25H, SENHA_ERRADA ; Compara com primeiro dígito da senha
-	MOV A, 22H ; Segundo dígito digitado
-	CJNE A, 26H, SENHA_ERRADA
-	MOV A, 23H ; Terceiro dígito digitado
-	CJNE A, 27H, SENHA_ERRADA
-	MOV A, 24H ; Quarto dígito digitado
-	CJNE A, 28H, SENHA_ERRADA
+    ; Compara cada dígito da senha
+    MOV A, 21H ; Primeiro dígito digitado
+    CJNE A, 25H, SENHA_ERRADA ; Compara com primeiro dígito da senha
+    MOV A, 22H ; Segundo dígito digitado
+    CJNE A, 26H, SENHA_ERRADA
+    MOV A, 23H ; Terceiro dígito digitado
+    CJNE A, 27H, SENHA_ERRADA
+    MOV A, 24H ; Quarto dígito digitado
+    CJNE A, 28H, SENHA_ERRADA
 
-; Senha correta
-	SETB P1.1 ; Acende LED verde
-	CLR P1.0 ; Apaga LED vermelho
-	CALL DELAY ; Espera um tempo
-	CLR P1.1 ; Apaga LED verde
-	SJMP RESETAR ; Reinicia para nova tentativa
+    ; Senha correta
+    SETB P1.1 ; Acende LED verde
+    CLR P1.0 ; Apaga LED vermelho
+    MOV P1, #0C0H ; Mostra "0" no display (opcional)
+    CALL DELAY ; Espera um tempo
+    CLR P1.1 ; Apaga LED verde
+    MOV P1, #0FFH ; Apaga o display
+    SJMP RESETAR ; Reinicia para nova tentativa
 
 SENHA_ERRADA:
-	SETB P1.0 ; Acende LED vermelho
-	CLR P1.1 ; Apaga LED verde
-	CALL DELAY ; Espera um tempo
-	CLR P1.0 ; Apaga LED vermelho
-	SJMP RESETAR ; Reinicia para nova tentativa
+    SETB P1.0 ; Acende LED vermelho
+    CLR P1.1 ; Apaga LED verde
+    MOV P1, #0BFH ; Mostra "-" no display para indicar erro
+    CALL DELAY ; Espera um tempo
+    CLR P1.0 ; Apaga LED vermelho
+    MOV P1, #0FFH ; Apaga o display
+    SJMP RESETAR ; Reinicia para nova tentativa
 
 NN_EH_AST:
-; Verifica se é a tecla # (resetar senha)
-	CJNE A, #0CH, NN_EH_HASH ; Se não for #, verifica dígitos
-; Tecla # pressionada - resetar senha
-	SJMP RESETAR
+    ; Verifica se é a tecla # (resetar senha)
+    CJNE A, #0CH, NN_EH_HASH ; Se não for #, verifica dígitos
+    ; Tecla # pressionada - resetar senha
+    SJMP RESETAR
 
 NN_EH_HASH:
-; Verifica se é um dígito válido (0-9)
-
-; Verifica se já digitou 4 dígitos
-	MOV R1, 20H ; Carrega contador de dígitos
-	CJNE R1, #04H, CONT_ARMAZ
-	LJMP MAIN_LOOP ; Já tem 4 dígitos, ignora até * ou #
+    ; Verifica se já digitou 4 dígitos
+    MOV R1, 20H ; Carrega contador de dígitos
+    CJNE R1, #04H, CONT_ARMAZ
+    LJMP MAIN_LOOP ; Já tem 4 dígitos, ignora até * ou #
 
 CONT_ARMAZ:
-; Armazena o dígito pressionado (já está em A)
-	INC 20H ; Incrementa contador de dígitos
-	MOV R1, 20H ; Usa R1 como índice temporário
+    ; Armazena o dígito pressionado (já está em A)
+    INC 20H ; Incrementa contador de dígitos
+    MOV R1, 20H ; Usa R1 como índice temporário
 
-; Determina onde armazenar o dígito
-	CJNE R1, #01H, NN_EH_PRIM
-	MOV 21H, A ; Armazena primeiro dígito
-	LJMP MAIN_LOOP
+    ; Mostra o dígito no display de 7 segmentos
+    CALL MOSTRA_DISPLAY
+
+    ; Determina onde armazenar o dígito
+    CJNE R1, #01H, NN_EH_PRIM
+    MOV 21H, A ; Armazena primeiro dígito
+    LJMP MAIN_LOOP
 
 NN_EH_PRIM:
-	CJNE R1, #02H, NN_EH_SEG
-	MOV 22H, A ; Armazena segundo dígito
-	LJMP MAIN_LOOP
+    CJNE R1, #02H, NN_EH_SEG
+    MOV 22H, A ; Armazena segundo dígito
+    LJMP MAIN_LOOP
 
 NN_EH_SEG:
-	CJNE R1, #03H, NN_EH_TERC
-	MOV 23H, A ; Armazena terceiro dígito
-	LJMP MAIN_LOOP
+    CJNE R1, #03H, NN_EH_TERC
+    MOV 23H, A ; Armazena terceiro dígito
+    LJMP MAIN_LOOP
 
 NN_EH_TERC:
-	MOV 24H, A ; Armazena quarto dígito
-	LJMP MAIN_LOOP
+    MOV 24H, A ; Armazena quarto dígito
+    LJMP MAIN_LOOP
 
 RESETAR:
-	MOV 20H, #00H ; Reseta contador de dígitos
-	MOV 21H, #00H ; Limpa dígitos armazenados
-	MOV 22H, #00H
-	MOV 23H, #00H
-	MOV 24H, #00H
-	LJMP MAIN_LOOP ; Volta para o loop principal
+    MOV 20H, #00H ; Reseta contador de dígitos
+    MOV 21H, #00H ; Limpa dígitos armazenados
+    MOV 22H, #00H
+    MOV 23H, #00H
+    MOV 24H, #00H
+    MOV P1, #0FFH ; Apaga o display
+    LJMP MAIN_LOOP ; Volta para o loop principal
+
+; Subrotina para mostrar o dígito no display
+MOSTRA_DISPLAY:
+    PUSH DPH
+    PUSH DPL
+    PUSH ACC
+    
+    MOV DPTR, #TABELA ; Carrega endereço da tabela de conversão
+    MOVC A, @A+DPTR   ; Converte o valor em A para o código do display
+    MOV P1, A         ; Mostra no display (conectado a P2)
+    
+    POP ACC
+    POP DPL
+    POP DPH
+    RET
 
 DELAY:
-	MOV R7, #05H
+    MOV R7, #05H
 DELAY_LOOP1:
-	MOV R6, #055H
+    MOV R6, #055H
 DELAY_LOOP2:
-	DJNZ R6, DELAY_LOOP2
-	DJNZ R7, DELAY_LOOP1
-	RET
+    DJNZ R6, DELAY_LOOP2
+    DJNZ R7, DELAY_LOOP1
+    RET
 
 TECLADO:
-	MOV R0, #0CH ; clear R0 - the first key is key0
+    MOV R0, #0CH ; clear R0 - the first key is key0
 
 ; scan row0
-	SETB P0.3 ; set row3
-	CLR P0.0 ; clear row0
-	CALL colScan ; call column-scan subroutine
+    SETB P0.3 ; set row3
+    CLR P0.0 ; clear row0
+    CALL colScan ; call column-scan subroutine
 
 ; scan row1
-	SETB P0.0 ; set row0
-	CLR P0.1 ; clear row1
-	CALL colScan ; call column-scan subroutine
+    SETB P0.0 ; set row0
+    CLR P0.1 ; clear row1
+    CALL colScan ; call column-scan subroutine
 
 ; scan row2
-	SETB P0.1 ; set row1
-	CLR P0.2 ; clear row2
-	CALL colScan ; call column-scan subroutine
+    SETB P0.1 ; set row1
+    CLR P0.2 ; clear row2
+    CALL colScan ; call column-scan subroutine
 
 ; scan row3
-	SETB P0.2 ; set row2
-	CLR P0.3 ; clear row3
-	CALL colScan ; call column-scan subroutine
-	CJNE R0,#0CH,SAI
-	MOV A,#0FFH
+    SETB P0.2 ; set row2
+    CLR P0.3 ; clear row3
+    CALL colScan ; call column-scan subroutine
+    CJNE R0,#0CH,SAI
+    MOV A,#0FFH
 SAI:
-	RET
+    RET
 
 colScan:
-	JNB P0.4, gotKey ; if col0 is cleared - key found
-	DEC R0 ; otherwise move to next key
-	JNB P0.5, gotKey ; if col1 is cleared - key found
-	DEC R0 ; otherwise move to next key
-	JNB P0.6, gotKey ; if col2 is cleared - key found
-	DEC R0 ; otherwise move to next key
-	RET ; return from subroutine - key not found
+    JNB P0.4, gotKey ; if col0 is cleared - key found
+    DEC R0 ; otherwise move to next key
+    JNB P0.5, gotKey ; if col1 is cleared - key found
+    DEC R0 ; otherwise move to next key
+    JNB P0.6, gotKey ; if col2 is cleared - key found
+    DEC R0 ; otherwise move to next key
+    RET ; return from subroutine - key not found
 gotKey:
-	MOV A,R0
-	RET
+    MOV A,R0
+    RET
+
+; Tabela de conversão para display de 7 segmentos (ânodo comum)
+; 0    1    2    3    4    5    6    7    8    9
+TABELA:
+    DB 0C0H, 0F9H, 0A4H, 0B0H, 99H, 92H, 83H, 0F8H, 80H, 98H
 
 END
