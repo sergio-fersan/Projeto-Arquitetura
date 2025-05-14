@@ -42,7 +42,7 @@ PROCESSA_TECLA:
     ; Senha correta
     SETB P1.1 ; Acende LED verde
     CLR P1.0 ; Apaga LED vermelho
-    MOV P1, #0C0H ; Mostra "0" no display (opcional)
+    MOV P1, #0C9H ; Mostra "porta aberta" no display
 	SETB P3.0
 	CLR P3.1
     CALL DELAY ; Espera um tempo
@@ -55,7 +55,7 @@ PROCESSA_TECLA:
 SENHA_ERRADA:
     SETB P1.0 ; Acende LED vermelho
     CLR P1.1 ; Apaga LED verde
-    MOV P1, #0BFH ; Mostra "-" no display para indicar erro
+    MOV P1, #0B6H ; Mostra 3 barrinhas horizontais para indicar que está errado
     CALL DELAY ; Espera um tempo
     CLR P1.0 ; Apaga LED vermelho
     MOV P1, #0FFH ; Apaga o display
@@ -192,6 +192,6 @@ gotKey:
 ; Tabela de conversão para display de 7 segmentos (ânodo comum)
 ; Posições: 0(0), 1(1), 2(2), 3(3), 4(4), 5(5), 6(6), 7(7), 8(8), 9(9)
 TABELA:
-    DB 0C0H, 0F9H, 0A4H, 0B0H, 99H, 92H, 82H, 0F8H, 80H, 98H
+    DB 0C0H, 0F9H, 0A4H, 0B0H, 99H, 92H, 82H, 0F8H, 80H, 90H
 
 END
