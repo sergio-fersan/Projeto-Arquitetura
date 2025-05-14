@@ -43,9 +43,13 @@ PROCESSA_TECLA:
     SETB P1.1 ; Acende LED verde
     CLR P1.0 ; Apaga LED vermelho
     MOV P1, #0C0H ; Mostra "0" no display (opcional)
+	SETB P3.0
+	CLR P3.1
     CALL DELAY ; Espera um tempo
     CLR P1.1 ; Apaga LED verde
     MOV P1, #0FFH ; Apaga o display
+	CLR P3.0
+	CLR P3.1
     SJMP RESETAR ; Reinicia para nova tentativa
 
 SENHA_ERRADA:
